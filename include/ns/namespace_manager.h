@@ -6,16 +6,17 @@ namespace LXM {
 class NsManager {
 public:
     NsManager();
-    void init();
-    void mount();
-    void exec();
+    int init();
+    int mount();
+    int exec();
 private:
-    void mount_root();
-    void mount_proc();
+    int mount_root();
+    int mount_proc();
 private:
     string image_path;
     string root_path;
-
+    string cmd;
+    char ** argv;
 };
 }
 #endif
