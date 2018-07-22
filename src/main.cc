@@ -8,10 +8,12 @@
 #include <sys/wait.h>
 #include <stdio.h>
 #include <sys/capability.h>
+#include "cgroup/res_handler_register.h"
+#include <iostream>
 #define STACK_SIZE (1024 * 1024)
 using std::shared_ptr;
 using LXM::NsManager;
-    int fds[2];
+int fds[2];
 void notify_close(int fd) {
     close(fd);
 }
@@ -66,20 +68,28 @@ int main_process(void * arg) {
 }
 int main (int argc, char *argv[]) {
     gflags::ParseCommandLineFlags(&argc, &argv, true);
-
+    if (FLAGS_cpu < 1000) {
+        std::cout << "cpu must great than 100" << std::endl;
+    }
+    LXM::ResHandlerRegister reg;
     int ret = pipe(fds);
     if (ret < 0) {
         return -1;
     }
     char * stack = (char *) malloc(STACK_SIZE);
-    printf("----------cur %d\n", getpid());
     int pid = clone(main_process, stack + STACK_SIZE,
         CLONE_NEWUTS | CLONE_NEWIPC | CLONE_NEWPID | CLONE_NEWNS | SIGCHLD | CLONE_NEWNET | CLONE_NEWUSER, NULL );
+    set_uid_and_gid(pid);
     LXM::CGroupManager cm;
+    if (cm.init() < 0) {
+        return 1;
+    }
     cm.request("cpu", FLAGS_cpu);
     cm.request("mem", FLAGS_mem);
-    cm.apply(pid);
-    set_uid_and_gid(pid);
+    std::cout << "cpu usage:" << FLAGS_cpu << endl;
+    if (cm.apply(pid) < 0) {
+        return 1;
+    }
     printf("notify close\n");
     notify_close(fds[1]);
     int status;

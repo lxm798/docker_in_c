@@ -44,9 +44,6 @@ NsManager::NsManager() {
 }
 
 int NsManager::init() {
-    printf("Container [%5d] - inside the container!\n", getpid());
-    system("cat /proc/self/uid_map");
-    system("cat /proc/self/gid_map");
     // set_uid_and_gid(getpid());
     if (sethostname("HP", 2) < 0) {
         perror("init failed");
@@ -69,8 +66,6 @@ int NsManager::mount() {
 }
 
 int NsManager::exec() {
-    system("id");
-    system("cat /etc/passwd");
     char  * const  argv[] = {(char*)"bash", NULL};
     if (execv(cmd.c_str(), argv) < 0) {
         perror((string("exec failed ") + cmd).c_str());

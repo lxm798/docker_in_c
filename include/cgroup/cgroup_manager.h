@@ -11,13 +11,15 @@ using std::map;
 using std::shared_ptr;
 class CGroupManager {
 public:
+    int init();
     void request(const string & res_name, float value);
-    void apply(int pid);
-    void register_handler(const string &res_name, shared_ptr<ResHandler> handler);
+    int apply(int pid);
+    static void register_handler(const string &res_name, shared_ptr<ResHandler> handler);
 
 private:
+    string name;
     map<string, float> cgroup_res;
-    map<string, shared_ptr<ResHandler>> cgroup_res_handlers;
+    static map<string, shared_ptr<ResHandler>> cgroup_res_handlers;
 };
 }
 
